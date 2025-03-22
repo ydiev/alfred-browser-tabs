@@ -44,6 +44,11 @@ function getBrowserAndWindows(windowIndex) {
  */
 function getSystemWindow(browserName, windowIndex, browserWindowTitle) {
   const browserProcess = Application("System Events").processes[browserName];
+
+  if (!browserProcess.exists()) {
+    console.log(`Error: Browser process "${browserName}" not found.`);
+    return undefined;
+  }
   const expectedTitlePrefix = `${browserWindowTitle} - `;
   const systemWindowByIndex = getSystemWindowByIndex(
     browserProcess,
@@ -65,7 +70,12 @@ function getSystemWindowByIndex(
   windowIndex,
   expectedTitlePrefix,
 ) {
-  const systemWindow = browserProcess.windows[windowIndex];
+  const windows = browserProcess.windows();
+  if (windowIndex >= windows.length || windowIndex < 0) {
+    console.log(`Error: Window index ${windowIndex} out of bounds.`);
+    return undefined;
+  }
+  const systemWindow = windows[windowIndex];
   if (!systemWindow || !hasExpectedTitle(systemWindow, expectedTitlePrefix)) {
     return undefined;
   }
@@ -92,6 +102,22 @@ function hasExpectedTitle(systemWindow, expectedTitlePrefix) {
  */
 function activateTab(browser, browserWindow, maybeSystemWindow, tabIndex) {
   browserWindow.activeTabIndex = tabIndex + 1;
-  maybeSystemWindow?.actions["AXRaise"].perform();
+
+  if (maybeSystemWindow) {
+    maybeSystemWindow.position = [0, 0]; // Move window to main screen
+    maybeSystemWindow.actions["AXRaise"].perform();
+    maybeSystemWindow.actions["AXBringToFront"].perform?.();
+  }
+
+  bringAppToFront(browser.name());
   browser.activate();
 }
+function bringAppToFront(browserName) {
+  const systemEvents = Application("System Events");
+  const dock = systemEvents.processes["Dock"].lists[0];
+
+  dock.uiElements()
+    .find((el) => el.description() === browserName)
+    ?.click();
+}
+
