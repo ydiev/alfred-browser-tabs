@@ -21,7 +21,7 @@ You have hundreds of tabs open that you need to sift through and ain't nobody go
 
 ## Installation
 
-1. Download the Alfred Workflow ([Browser-Tabs.alfredworkflow](https://github.com/ydiev/alfred-browser-tabs/raw/refs/heads/main/Browser-Tabs-Forked.alfredworkflow)).
+1. Download the Alfred Workflow ([Browser-Tabs.alfredworkflow]([https://github.com/ydiev/alfred-browser-tabs/raw/refs/heads/main/Browser-Tabs-Forked.alfredworkflow](https://github.com/ydiev/alfred-browser-tabs/raw/refs/heads/main/Browser%20Tabs%20Forked.alfredworkflow))).
 1. Double-click to import into Alfred (requires Powerpack).
 1. Review workflow, add hotkeys, customize.
 
