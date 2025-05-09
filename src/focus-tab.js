@@ -6,7 +6,8 @@ function run(args) {
   const { browser, browserWindow, maybeSystemWindow } =
     getBrowserAndWindows(windowIndex);
 
-  activateTab(browser, browserWindow, maybeSystemWindow, tabIndex);
+  // activateTab(browser, browserWindow, maybeSystemWindow, windowIndex, tabIndex);
+  focusOnBrowserWindow(windowIndex, tabIndex);
 }
 
 /**
@@ -51,7 +52,7 @@ function getSystemWindow(browserName, windowIndex, browserWindowTitle) {
   }
   const expectedTitlePrefix = `${browserWindowTitle} - `;
   const systemWindowByIndex = getSystemWindowByIndex(
-    browserProcess,
+    // browserProcess,
     windowIndex,
     expectedTitlePrefix,
   );
@@ -66,58 +67,35 @@ function getSystemWindow(browserName, windowIndex, browserWindowTitle) {
  * undefined.
  */
 function getSystemWindowByIndex(
-  browserProcess,
   windowIndex,
   expectedTitlePrefix,
 ) {
-  const windows = browserProcess.windows();
+  const browser = Application($.getenv("browser"));
+  const windows = browser.windows();
   if (windowIndex >= windows.length || windowIndex < 0) {
     console.log(`Error: Window index ${windowIndex} out of bounds.`);
     return undefined;
   }
   const systemWindow = windows[windowIndex];
-  if (!systemWindow || !hasExpectedTitle(systemWindow, expectedTitlePrefix)) {
-    return undefined;
-  }
   return systemWindow;
 }
 
-/**
- * Returns the first system window with the expected title prefix, or undefined if not found.
- */
-function getSystemWindowByTitle(browserProcess, expectedTitlePrefix) {
-  const systemWindows = browserProcess.windows();
-  return systemWindows.find((systemWindow) =>
-    hasExpectedTitle(systemWindow, expectedTitlePrefix),
-  );
-}
+// Usage:
+function focusOnBrowserWindow(windowIndex, tabIndex) {
+  const browser = Application($.getenv("browser"));
+  const windows = browser.windows();
 
-function hasExpectedTitle(systemWindow, expectedTitlePrefix) {
-  return systemWindow.title().startsWith(expectedTitlePrefix);
-}
+  if (windows.length > 0) {
+    const targetWindow = windows[windowIndex || 0];
 
-/**
- * Activates the tab at the given index in the browser window, focuses the window, and activates the
- * browser application.
- */
-function activateTab(browser, browserWindow, maybeSystemWindow, tabIndex) {
-  browserWindow.activeTabIndex = tabIndex + 1;
+    targetWindow.activeTabIndex = tabIndex + 1;
 
-  if (maybeSystemWindow) {
-    maybeSystemWindow.position = [0, 0]; // Move window to main screen
-    maybeSystemWindow.actions["AXRaise"].perform();
-    maybeSystemWindow.actions["AXBringToFront"].perform?.();
+    browser.activate();
+    targetWindow.index = 1;
+
+
+    return true;
   }
-
-  bringAppToFront(browser.name());
-  browser.activate();
-}
-function bringAppToFront(browserName) {
-  const systemEvents = Application("System Events");
-  const dock = systemEvents.processes["Dock"].lists[0];
-
-  dock.uiElements()
-    .find((el) => el.description() === browserName)
-    ?.click();
+  return false;
 }
 
